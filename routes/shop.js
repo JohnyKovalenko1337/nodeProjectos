@@ -13,11 +13,11 @@ Router.get('/cart',shopController.getCart ) ;
 
 Router.post('/cart', shopController.postCart);
 
+Router.post('/cart-delete-item', shopController.postCartDelete);
 Router.post('/create-order', shopController.postOrder);
 
-Router.post('/cart-delete-item', shopController.postCartDelete);
 
-Router.get('/orders',shopController.getOrder) ;
+Router.get('/orders',shopController.getOrder) ; 
 
 //Router.get('/checkout',shopController.getCheckout ) ;
 

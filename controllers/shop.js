@@ -1,8 +1,8 @@
 const Products = require('../models/product');
-const Order = require('../models/orders');
+//const Order = require('../models/orders');
 //<====================================================products================================================
 exports.getProducts = (req,res,next) =>{
-    Products.findAll()
+    Products.fetchAll()
     .then(products => {
         res.render('./shop/product-list', 
             {prods: products,
@@ -17,7 +17,7 @@ exports.getProducts = (req,res,next) =>{
 //<===============================================productDetail===============================================
 exports.productId=(req,res,next)=>{
     const prodId = req.params.productId;
-    Products.findByPk(prodId).then(product=>{
+    Products.findById(prodId).then(product=>{
         res.render('./shop/product-detail', {
             product : product,
             docTitle: product.title,
@@ -28,7 +28,7 @@ exports.productId=(req,res,next)=>{
 }
 //=======================================================index==================================
 exports.getIndex =(req,res,next )=>{
-    Products.findAll().then(products => {
+    Products.fetchAll().then(products => {
         res.render('./shop/index', 
         {prods: products,
         docTitle:'Shop',                           //render templates called shop
@@ -42,31 +42,23 @@ exports.getIndex =(req,res,next )=>{
 };
 //======================================================cart=====================================================
 exports.getCart =(req,res,next )=>{
-    req.user.getCart()          //req.user defined by middleware in app.js getCart method created by sequelize because we have assosiatin with Cart
-    .then(cart=>{
-        return cart.getProducts() //getProducts method created by sequelize because we have assosiatin with Products
-        .then(products =>{
-            res.render('shop/cart',{
-                path: '/cart',
-                docTitle: 'Your cart',
-                products: products
-            });
-        })
-        .catch(err=>{console.log(err);})})
+    req.user.           //req.user defined by middleware in app.js
+    getCart()          // getCart method created in model user.js
+    .then(products =>{
+        res.render('shop/cart',{
+            path: '/cart',
+            docTitle: 'Your cart',
+            products: products
+        });
+    })
     .catch(err=>{console.log(err);});
+
 }
 
 exports.postCartDelete=(req,res,next)=>{
     const prodId = req.body.productId;
-    req.user.getCart()
-    .then(cart=>{
-        return cart.getProducts({where: {id : prodId}})
-    })
-    .then(products=>{
-        const product = products[0];
-        return product.cartItem.destroy();      //cartItem defined in model CartItem so by using this we define this model
-    })
-    .then(()=>{
+    req.user.deleteItemFromCart(prodId)
+    .then((result)=>{
         res.redirect('/cart');
     })
     .catch(err=>{console.log(err);})
@@ -74,58 +66,24 @@ exports.postCartDelete=(req,res,next)=>{
 
 exports.postCart =(req,res,next )=>{
     const prodId = req.body.productId;
-    let fetchedCart;
-    let newQuantity = 1;
-    req.user.getCart()
-    .then(cart=>{
-        fetchedCart = cart;
-        return cart.getProducts({where:{id:prodId}})
+    Products.findById(prodId)
+    .then(product=>{
+      return req.user.addToCart(product);
+       
     })
-    .then(products =>{
-        let product;
-        if(products.length>0){
-            product = products[0];
-        }
-        if(product){
-            const oldQuantity = product.cartItem.quantity;
-            newQuantity = 1 + oldQuantity;
-            return product;
-        }
-        return Products.findByPk(prodId)
-    })
-    .then(product =>{
-        return fetchedCart.addProducts(product, {through:{quantity: newQuantity}})})
     .then(()=>{
         res.redirect('/cart');
     })
     .catch(err=>{
         console.log(err);
     })
-    
+   
 }
 //<====================================================Orders============================================
 exports.postOrder= (req,res,next)=>{
     let fetchedCart;
-    req.user.getCart()
-    .then(cart =>{
-        fetchedCart = cart;
-        return cart.getProducts();
-    })
-    .then(products=>{
-        return req.user.createOrder()
-            .then(order=>{
-                    order.addProducts(
-                        products.map(product =>{
-                        product.orderItem={quantity:product.cartItem.quantity};
-                        return product;
-                }))
-            })
-            .catch(err=>{console.log(err);})
-    })
-    .then(()=>{
-        return fetchedCart.setProducts(null);   
-        
-    })
+    req.user
+    .addOrder()
     .then(()=>{
         res.redirect('/orders');    
     })
@@ -133,7 +91,7 @@ exports.postOrder= (req,res,next)=>{
 }
 
 exports.getOrder =(req,res,next )=>{
-    req.user.getOrders({include: ['products']})
+    req.user.getOrders()
     .then(orders=>{
         res.render('./shop/orders',{
             path: '/orders',
