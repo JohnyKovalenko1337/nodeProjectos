@@ -2,7 +2,7 @@ const Products = require('../models/product');
 //const Order = require('../models/orders');
 //<====================================================products================================================
 exports.getProducts = (req,res,next) =>{
-    Products.fetchAll()
+    Products.find()                     //mongoose method find()
     .then(products => {
         res.render('./shop/product-list', 
             {prods: products,
@@ -17,7 +17,7 @@ exports.getProducts = (req,res,next) =>{
 //<===============================================productDetail===============================================
 exports.productId=(req,res,next)=>{
     const prodId = req.params.productId;
-    Products.findById(prodId).then(product=>{
+    Products.findById(prodId).then(product=>{       // mongoose method find by id
         res.render('./shop/product-detail', {
             product : product,
             docTitle: product.title,
@@ -28,7 +28,8 @@ exports.productId=(req,res,next)=>{
 }
 //=======================================================index==================================
 exports.getIndex =(req,res,next )=>{
-    Products.fetchAll().then(products => {
+    Products.find()                     // mongoose method find()
+    .then(products => {
         res.render('./shop/index', 
         {prods: products,
         docTitle:'Shop',                           //render templates called shop

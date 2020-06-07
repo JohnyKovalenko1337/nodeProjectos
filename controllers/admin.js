@@ -12,15 +12,13 @@ exports.postAddProduct=(req,res,next) =>{
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    const product = new Products(
-        title,
-        price,
-        description,
-        imageUrl,
-        null,
-        req.user._id
-        );
-    product.save()
+    const product = new Products({
+        title:title, 
+        price:price, 
+        description: description, 
+        imageUrl: imageUrl
+    });
+    product.save()                      // save method from mongoose
     .then(result =>{
         console.log('admin.js');
         console.log(result);
@@ -29,7 +27,7 @@ exports.postAddProduct=(req,res,next) =>{
     .catch(err =>{console.log(err);});
 }
 exports.getProducts =(req,res,next )=>{
-    Products.fetchAll().
+    Products.find().
     then(products =>{
     res.render('./admin/products', 
     {prods: products,
@@ -46,7 +44,7 @@ exports.getEditProduct=(req,res,next) =>{
         return res.redirect('/');
     }
     const prodId = req.params.ProductId;
-    Products.findById(prodId)
+    Products.findById(prodId)               // findById mongoose method
     .then(product =>{
         if(!product){
             res.redirect('/');
@@ -64,13 +62,12 @@ exports.getEditProduct=(req,res,next) =>{
 
 exports.postDeleteProduct=(req,res,next) =>{
     const prodId = req.body.productId;
-    Products.deleteById(prodId)
+    Products.findByIdAndRemove(prodId)
     .then(()=>{
         console.log('Product has been destroyed successfuly');
         res.redirect('/admin/products'); 
     })
     .catch(err=>{console.log(err);});
-    
     
 }
 
@@ -81,14 +78,14 @@ exports.postEditProduct=(req,res,next)=>{
     const updatedImageUrl = req.body.imageUrl;
     const updatedDescription = req.body.description;
     
-    const product = new Products(
-        updatedTitle, 
-        updatedPrice,
-         updatedDescription,
-          updatedImageUrl, 
-          prodId);
-
-    product.save()  
+    Products.findById(prodId)
+    .then(product=>{
+        product.title = updatedTitle;
+        product.price = updatedPrice;
+        product.imageUrl = updatedImageUrl;
+        product.description = updatedDescription;
+        return  product.save()  
+    })
     .then(()=> {
         console.log('Updated product!');
         res.redirect('/admin/products');

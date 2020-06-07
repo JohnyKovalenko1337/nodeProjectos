@@ -1,7 +1,27 @@
-const getDb = require('../util/database').getDb;
-const mongodb = require('mongodb');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-class Product {
+const productSchema = new Schema ({
+    title:{ 
+        type:String,
+        requered: true,
+    },
+    price:{
+        type:Number,
+        requered: true,
+    },
+    description:{
+        type:String,
+        requered: true,
+    },
+    imageUrl:{
+        type:String,
+        requered: true,
+    },
+})
+
+module.exports = mongoose.model('Product',productSchema);
+/* class Product {
     constructor(title, price, description, imageUrl, id,userId){
         this.title = title;
         this.price = price;
@@ -69,4 +89,4 @@ class Product {
     }
 }
 
-module.exports = Product;
+module.exports = Product; */
