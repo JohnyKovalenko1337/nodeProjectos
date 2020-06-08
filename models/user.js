@@ -1,4 +1,30 @@
-const getDb = require('../util/database').getDb;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    email:{
+        type: String,
+        required: true
+    },
+    cart:{
+        items:[{
+            productId:{
+                type: Schema.Types.ObjectId,
+                required: true
+            },
+            quantity:{
+                type: Number,
+                required: true
+            }
+    }]
+    }
+});
+module.exports= mongoose.model('Users', userSchema);
+/* const getDb = require('../util/database').getDb;
 const mongodb = require('mongodb');
 
 class User {
@@ -105,4 +131,4 @@ class User {
         .findOne({_id : new mongodb.ObjectId(userId)}).then().catch(err=>{console.log(err);});
     }
 };
-module.exports = User;
+module.exports = User; */
