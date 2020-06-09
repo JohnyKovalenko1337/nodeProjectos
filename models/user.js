@@ -14,6 +14,7 @@ const userSchema = new Schema({
         items:[{
             productId:{
                 type: Schema.Types.ObjectId,
+                ref: 'Product',
                 required: true
             },
             quantity:{
@@ -23,77 +24,45 @@ const userSchema = new Schema({
     }]
     }
 });
-module.exports= mongoose.model('Users', userSchema);
-/* const getDb = require('../util/database').getDb;
-const mongodb = require('mongodb');
+// <------------------adding new method addToCart to our schema----------------------->
+userSchema.methods.addToCart = function(product){      // it is important to be written like that
+    const CartProductIndex = this.cart.items.findIndex(cp=>{
+        return cp.productId.toString() === product._id.toString();
+    });
+    let newQuantity = 1;
+    const updatedCartItems = [ ...this.cart.items];
+    if(CartProductIndex >= 0){
+        newQuantity = this.cart.items[CartProductIndex].quantity + 1;
+        updatedCartItems[CartProductIndex].quantity = newQuantity;
+    }
+    else{
+        updatedCartItems.push({productId : product._id,quantity:newQuantity});
+    }
+    
+    const updatedCart = { items: updatedCartItems} ;
+    
+    this.cart = updatedCart;
 
-class User {
-    constructor( name, email,cart,id){
-        
-        this.name = name;
-        this.email = email;
-        this.cart = cart;
-        this._id = id;
-    }
-    save(){
-        const db = getDb();
-        return db.collection('users').insertOne(this);
-    }
-    addToCart(product){
-        
-        const CartProductIndex = this.cart.items.findIndex(cp=>{
-            return cp.productId.toString() === product._id.toString();
-        });
-        let newQuantity = 1;
-        const updatedCartItems = [ ...this.cart.items];
-        if(CartProductIndex >= 0){
-            newQuantity = this.cart.items[CartProductIndex].quantity + 1;
-            updatedCartItems[CartProductIndex].quantity = newQuantity;
-        }
-        else{
-            updatedCartItems.push({productId : new mongodb.ObjectId(product._id),quantity:newQuantity});
-        }
-        
-        const updatedCart = {
-            items: updatedCartItems} ;
-        const db = getDb();
-        return db.collection('users')
-        .updateOne(
-            {_id:new mongodb.ObjectId(this._id)},
-            {$set: {cart: updatedCart}})
-    }
+    return this.save();
+} ;
+// <===============adding new method deleteItemFromCart to our schema=========>
 
-    getCart(){
-        const db = getDb();
-        const productIds = this.cart.items.map(i=>{ // taking ids of items by mapping 
-            return i.productId;
-        })
-        return db.collection('products')
-        .find({ _id: { $in:productIds } })
-        .toArray()
-        .then(products=>{
-            return products.map(p=>{            //transforming products like this
-                return{
-                    ...p,                               // products properties + 
-                    quantity: this.cart.items.find( i=>{        //quantity of found product
-                        return i.productId.toString() === p._id.toString();
-                    }).quantity
-                }
-            });
-        });
-    }
+userSchema.methods.deleteItemFromCart = function(productId){
+    const updatedCartItems = this.cart.items.filter(item=>{
+        return item.productId.toString() !== productId.toString();
+    });
+    this.cart.items = updatedCartItems;
+    return this.save();
+}
+// <===============adding new method clearCart to our schema=========>
+userSchema.methods.clearCart = function(){
+    this.cart = {items: []};
+    return this.save();
+}
 
-    deleteItemFromCart(productId){
-        const updatedCartItems = this.cart.items.filter(item=>{
-            return item.productId.toString() !== productId.toString();
-        });
+module.exports= mongoose.model('User', userSchema);
+/*
 
-        const db = getDb();
-        return db.collection('users')
-        .updateOne(
-            {_id:new mongodb.ObjectId(this._id)},
-            {$set: {cart: {items: updatedCartItems}}})
-    }
 
     addOrder(){
         const db = getDb();
@@ -130,5 +99,4 @@ class User {
         return db.collection('users')
         .findOne({_id : new mongodb.ObjectId(userId)}).then().catch(err=>{console.log(err);});
     }
-};
-module.exports = User; */
+ */
