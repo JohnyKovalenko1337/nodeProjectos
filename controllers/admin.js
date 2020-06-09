@@ -16,7 +16,8 @@ exports.postAddProduct=(req,res,next) =>{
         title:title, 
         price:price, 
         description: description, 
-        imageUrl: imageUrl
+        imageUrl: imageUrl,
+        userId: req.user
     });
     product.save()                      // save method from mongoose
     .then(result =>{
@@ -27,8 +28,10 @@ exports.postAddProduct=(req,res,next) =>{
     .catch(err =>{console.log(err);});
 }
 exports.getProducts =(req,res,next )=>{
-    Products.find().
-    then(products =>{
+    Products
+    .find()
+    //.populate('userId')             // mongoose method which return data by the query
+    .then(products =>{
     res.render('./admin/products', 
     {prods: products,
     docTitle:'Products',                           //render templates called shop
