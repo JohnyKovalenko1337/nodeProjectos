@@ -12,7 +12,7 @@ app.set('views', 'views');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const errorController = require('./controllers/error');
-
+const AuthRouter = require('./routes/auth');
 //<======================================================================================
 app.use(bodyParser.urlencoded({ extended: false }));           // syntax for body Parser
 app.use(express.static(path.join(__dirname, 'public')));     // for static styles 
@@ -29,10 +29,11 @@ app.use((req, res, next) => {
     })
 })
 
+
 app.use('/admin', adminRoutes);              //'hidden' middleware for admin.ejs
 
 app.use(shopRoutes);                            //middleware for shop.ejs
-
+app.use(AuthRouter);
 app.use(errorController.prob);
 
 // =================================================================================
