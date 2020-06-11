@@ -5,7 +5,8 @@ exports.getAddProduct=(req,res,next) =>{
     res.render('./admin/edit-product',{ 
         docTitle:'Add-products',
         path:'/admin/add-product',
-        editing: false,}); 
+        editing: false,
+        isAuthenticated: req.session.isLoggedIn}); 
 }
 exports.postAddProduct=(req,res,next) =>{
     const title = req.body.title;
@@ -24,6 +25,7 @@ exports.postAddProduct=(req,res,next) =>{
         console.log('admin.js');
         console.log(result);
         res.redirect('/admin/products');
+        
     })
     .catch(err =>{console.log(err);});
 }
@@ -36,6 +38,7 @@ exports.getProducts =(req,res,next )=>{
     {prods: products,
     docTitle:'Products',                           //render templates called shop
     path:'/admin/products', 
+    isAuthenticated: req.session.isLoggedIn
     }); 
 })
 .catch(err=>{console.log(err);})
@@ -56,7 +59,8 @@ exports.getEditProduct=(req,res,next) =>{
             docTitle:'Edit-product',
             path:'/admin/edit-product',
             editing: editMode,
-            product: product}); 
+            product: product,
+            isAuthenticated: req.session.isLoggedIn}); 
     })
     .catch(err=>{
         console.log(err);
