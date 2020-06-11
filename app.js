@@ -2,7 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDbStore = require('connect-mongodb-session')(session);
+//<============================================================================
+const MONGODB_URI = 'mongodb+srv://sadJo:qwerty123@cluster0-am1ix.mongodb.net/test';
 const app = express();
+const store = new MongoDbStore({
+  uri: MONGODB_URI,
+  collection: 'sessions'
+});
 // ======================================== models ===========================
 const User = require('./models/user')
 //============================templates================================================>
@@ -16,12 +24,15 @@ const AuthRouter = require('./routes/auth');
 //<======================================================================================
 app.use(bodyParser.urlencoded({ extended: false }));           // syntax for body Parser
 app.use(express.static(path.join(__dirname, 'public')));     // for static styles 
-
+app.use(session({secret: 'team secret', resave: false, saveUninitialized: false,store: store}))
 //======================================Middlewares==================================
 app.use((req, res, next) => {
-  User.findById('5ede4f2d46955c1d107dab58')
+  if(!req.session.user){
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then(user => {
-      req.user = user
+      req.user = user;
       next();
     })
     .catch(err => {
@@ -37,7 +48,7 @@ app.use(AuthRouter);
 app.use(errorController.prob);
 
 // =================================================================================
-mongoose.connect('mongodb+srv://sadJo:qwerty123@cluster0-am1ix.mongodb.net/test?retryWrites=true&w=majority',{ useUnifiedTopology: true, useNewUrlParser: true  })
+mongoose.connect(MONGODB_URI,{ useUnifiedTopology: true, useNewUrlParser: true  })
 .then(()=>{
   User.findOne().then((user)=>{
     if(!user){
