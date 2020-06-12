@@ -4,6 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
+const csurf = require('csurf');
 //<============================================================================
 const MONGODB_URI = 'mongodb+srv://sadJo:qwerty123@cluster0-am1ix.mongodb.net/test';
 const app = express();
@@ -11,6 +12,7 @@ const store = new MongoDbStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
+const csurfProtection = csurf();
 // ======================================== models ===========================
 const User = require('./models/user')
 //============================templates================================================>
@@ -25,6 +27,7 @@ const AuthRouter = require('./routes/auth');
 app.use(bodyParser.urlencoded({ extended: false }));           // syntax for body Parser
 app.use(express.static(path.join(__dirname, 'public')));     // for static styles 
 app.use(session({secret: 'team secret', resave: false, saveUninitialized: false,store: store}))
+app.use(csurfProtection);
 //======================================Middlewares==================================
 app.use((req, res, next) => {
   if(!req.session.user){
@@ -40,6 +43,11 @@ app.use((req, res, next) => {
     })
 })
 
+app.use((req,res,next)=>{                   // middleware for rendered views
+  res.locals.isAuthenticated = req.session.isLoggedIn;  
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 app.use('/admin', adminRoutes);              //'hidden' middleware for admin.ejs
 
@@ -50,20 +58,6 @@ app.use(errorController.prob);
 // =================================================================================
 mongoose.connect(MONGODB_URI,{ useUnifiedTopology: true, useNewUrlParser: true  })
 .then(()=>{
-  User.findOne().then((user)=>{
-    if(!user){
-      const user = new User({
-        name:'SadyJO',
-        email:'ejik1337@gmail.com',
-        cart:{
-          items: []
-        }
-      });
-      user.save();
-    }
-  })
- 
- 
   console.log('success');
   app.listen(3000);
 })
