@@ -1,5 +1,5 @@
 const express = require('express');
-
+const isAuth = require('../middleware/is-auth');
 
 const Router= express.Router();
 
@@ -8,6 +8,10 @@ const authController = require('../controllers/auth');
 Router.get('/login',authController.getLogin);
 
 Router.get('/signup',authController.getSignup);
+
+Router.get('/reset',authController.getReset );
+
+//Router.post('reset',authController);
 
 Router.post('/login',authController.postLogin);
 
