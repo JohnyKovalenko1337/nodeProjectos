@@ -5,13 +5,15 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
 const csurf = require('csurf');
+const flash = require('connect-flash');
 //<============================================================================
 const MONGODB_URI = 'mongodb+srv://sadJo:qwerty123@cluster0-am1ix.mongodb.net/test';
-const app = express();
+
 const store = new MongoDbStore({
   uri: MONGODB_URI,
   collection: 'sessions'
 });
+const app = express();
 const csurfProtection = csurf();
 // ======================================== models ===========================
 const User = require('./models/user')
@@ -27,7 +29,10 @@ const AuthRouter = require('./routes/auth');
 app.use(bodyParser.urlencoded({ extended: false }));           // syntax for body Parser
 app.use(express.static(path.join(__dirname, 'public')));     // for static styles 
 app.use(session({secret: 'team secret', resave: false, saveUninitialized: false,store: store}))
+
 app.use(csurfProtection);
+
+app.use(flash());              //initialize flash middleware
 //======================================Middlewares==================================
 app.use((req, res, next) => {
   if(!req.session.user){
