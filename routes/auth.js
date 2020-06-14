@@ -11,7 +11,11 @@ Router.get('/signup',authController.getSignup);
 
 Router.get('/reset',authController.getReset );
 
-//Router.post('reset',authController);
+Router.get('/reset/:token',authController.getNewPassword);
+
+Router.post('/new-password',authController.postNewPassword);
+
+Router.post('/reset',authController.postReset);
 
 Router.post('/login',authController.postLogin);
 
