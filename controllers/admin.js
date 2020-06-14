@@ -31,7 +31,7 @@ exports.postAddProduct=(req,res,next) =>{
 }
 exports.getProducts =(req,res,next )=>{
     Products
-    .find()
+    .find({userId:req.user._id})
     //.populate('userId')             // mongoose method which return data by the query
     .then(products =>{
     res.render('./admin/products', 
@@ -68,7 +68,7 @@ exports.getEditProduct=(req,res,next) =>{
 
 exports.postDeleteProduct=(req,res,next) =>{
     const prodId = req.body.productId;
-    Products.findByIdAndRemove(prodId)
+    Products.deleteOne({_id: prodId, userId: req.user._id})
     .then(()=>{
         console.log('Product has been destroyed successfuly');
         res.redirect('/admin/products'); 
@@ -86,16 +86,20 @@ exports.postEditProduct=(req,res,next)=>{
     
     Products.findById(prodId)
     .then(product=>{
+        if(product.userId.toString() !== req.user._id.toString()){
+            return res.redirect('/');
+        }
         product.title = updatedTitle;
         product.price = updatedPrice;
         product.imageUrl = updatedImageUrl;
         product.description = updatedDescription;
-        return  product.save()  
+        return  product
+            .save()
+            .then(()=> {
+                console.log('Updated product!');
+                res.redirect('/admin/products');  
+            });
     })
-    .then(()=> {
-        console.log('Updated product!');
-        res.redirect('/admin/products');
-;    })
     .catch(err=>{
         console.log(err);
     });
