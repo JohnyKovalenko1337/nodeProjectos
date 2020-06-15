@@ -34,19 +34,6 @@ app.use(csurfProtection);
 
 app.use(flash());              //initialize flash middleware
 //======================================Middlewares==================================
-app.use((req, res, next) => {
-  if(!req.session.user){
-    return next();
-  }
-  User.findById(req.session.user._id)
-    .then(user => {
-      req.user = user;
-      next();
-    })
-    .catch(err => {
-      console.log(err);
-    })
-})
 
 app.use((req,res,next)=>{                   // middleware for rendered views
   res.locals.isAuthenticated = req.session.isLoggedIn;  
@@ -54,11 +41,40 @@ app.use((req,res,next)=>{                   // middleware for rendered views
   next();
 });
 
+
+app.use((req, res, next) => {
+  if(!req.session.user){
+    return next();
+  }
+  User.findById(req.session.user._id)
+    .then(user => {
+      if(!user){
+        return next();
+      }
+      req.user = user;
+      next();
+    })
+    .catch(err => {
+      throw new Error(err);
+    })
+})
+
+
+
 app.use('/admin', adminRoutes);              //'hidden' middleware for admin.ejs
 
 app.use(shopRoutes);                            //middleware for shop.ejs
 app.use(AuthRouter);
 app.use(errorController.prob);
+app.use('/500',errorController.get500);
+
+app.use((error,req,res,next)=>{           // special type of middleware
+  res.status(500).render('500', {
+    docTitle:'error',
+    path:'500',
+    isAuthenticated: req.session.isLoggedIn
+  }); 
+})
 
 // =================================================================================
 mongoose.connect(MONGODB_URI,{ useUnifiedTopology: true, useNewUrlParser: true  })
