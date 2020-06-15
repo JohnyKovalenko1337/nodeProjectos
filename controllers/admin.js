@@ -21,7 +21,6 @@ exports.postAddProduct=(req,res,next) =>{
     const errors = validationResult(req);
 
     if(!errors.isEmpty()){
-        console.log(errors.array())
         return res.status(422).render('./admin/edit-product',{ 
             docTitle:'Add product',
             path:'/admin/edit-product',
@@ -53,7 +52,10 @@ exports.postAddProduct=(req,res,next) =>{
         res.redirect('/admin/products');
         
     })
-    .catch(err =>{console.log(err);});
+    .catch(err =>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);});
 }
 exports.getProducts =(req,res,next )=>{
     Products
@@ -66,7 +68,10 @@ exports.getProducts =(req,res,next )=>{
     path:'/admin/products'
     }); 
 })
-.catch(err=>{console.log(err);})
+.catch(err=>{
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);})
 }; 
 
 exports.getEditProduct=(req,res,next) =>{
@@ -91,7 +96,10 @@ exports.getEditProduct=(req,res,next) =>{
         }); 
     })
     .catch(err=>{
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+        //res.redirect('/500');
     })
 }
 
@@ -102,7 +110,10 @@ exports.postDeleteProduct=(req,res,next) =>{
         console.log('Product has been destroyed successfuly');
         res.redirect('/admin/products'); 
     })
-    .catch(err=>{console.log(err);});
+    .catch(err=>{
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);});
     
 }
 
@@ -151,7 +162,9 @@ exports.postEditProduct=(req,res,next)=>{
             });
     })
     .catch(err=>{
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     });
    
 }
