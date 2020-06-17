@@ -2,6 +2,7 @@
 const Products = require('../models/product');
 
 const { validationResult } = require('express-validator');
+const fileHelper = require('../util/file');
 
 exports.getAddProduct=(req,res,next) =>{
     res.render('./admin/edit-product',{ 
@@ -121,15 +122,24 @@ exports.getEditProduct=(req,res,next) =>{
 
 exports.postDeleteProduct=(req,res,next) =>{
     const prodId = req.body.productId;
-    Products.deleteOne({_id: prodId, userId: req.user._id})
+    Products.findById(prodId)
+    .then(product=>{
+        if(!product){
+            return next(new Error('No product found'))
+        }
+        fileHelper.deleteFile(product.imageUrl);
+        return Products.deleteOne({_id: prodId, userId: req.user._id});
+    })
     .then(()=>{
         console.log('Product has been destroyed successfuly');
         res.redirect('/admin/products'); 
     })
     .catch(err=>{
+        console.log(err);
         const error = new Error(err);
         error.httpStatusCode = 500;
         return next(error);});
+    
     
 }
 
@@ -168,6 +178,7 @@ exports.postEditProduct=(req,res,next)=>{
         product.title = updatedTitle;
         product.price = updatedPrice;
         if(updatedImage){
+            fileHelper.deleteFile(product.imageUrl);
             product.imageUrl = updatedImage.path;
         }
         
