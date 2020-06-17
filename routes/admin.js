@@ -15,14 +15,14 @@ Router.get('/add-product',  isAuth,  adminController.getAddProduct ) ;
 Router.post('/add-product',
     [
         body('title')
-            .isAlphanumeric()
+            .isString()
             .isLength({ min:2 })
             .trim(),
 
         body('price')
             .isFloat(),
         body('description')
-            .isAlphanumeric()
+            .isString()
             .isLength({ max:100 })
             .trim()
     ],
