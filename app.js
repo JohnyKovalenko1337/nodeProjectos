@@ -55,6 +55,7 @@ app.use(bodyParser.urlencoded({ extended: false }));           // syntax for bod
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
 
 app.use(express.static(path.join(__dirname, 'public')));     // for static styles 
+app.use('/image',express.static(path.join(__dirname, 'image'))); 
 
 app.use(session({secret: 'team secret', resave: false, saveUninitialized: false,store: store}))
 
@@ -98,13 +99,13 @@ app.use('/500',errorController.get500);
 app.use(errorController.prob);
 
 
-/* app.use((error,req,res,next)=>{           // special type of middleware
+app.use((error,req,res,next)=>{           // special type of middleware
   res.status(500).render('500', {
     docTitle:'error',
     path:'/500',
     isAuthenticated: req.session.isLoggedIn
   }); 
-}) */
+})
 
 // =================================================================================
 mongoose.connect(MONGODB_URI,{ useUnifiedTopology: true, useNewUrlParser: true  })
