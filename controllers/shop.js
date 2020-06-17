@@ -3,14 +3,31 @@ const Order = require('../models/order');
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+
+const ITEMS_PER_PAGE = 1;
 //<====================================================products================================================
 exports.getProducts = (req,res,next) =>{
-    Products.find()                     //mongoose method find()
-    .then(products => {
-        res.render('./shop/product-list', 
+    const page = +req.query.page || 1;
+    let totalItems;
+    
+    Products.find().countDocuments()
+        .then((numProducts)=>{
+            totalItems = numProducts;
+            return  Products.find()                     // mongoose method find()
+                .skip( ( page - 1 ) * ITEMS_PER_PAGE )      // skips items cuz of pagination
+                .limit(ITEMS_PER_PAGE)
+        })
+        .then(products => {
+            res.render('./shop/product-list', 
             {prods: products,
             docTitle:'Products',                           //render templates called shop
-            path:'/shop'
+            path:'/products',
+            currentPage: page,
+            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+            hasPreviousPage: page > 1,
+            nextPage: page + 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
             }); 
         })
         .catch(err=>{
@@ -37,15 +54,31 @@ exports.productId=(req,res,next)=>{
 }
 //=======================================================index==================================
 exports.getIndex =(req,res,next )=>{
-    Products.find()                     // mongoose method find()
+    const page = +req.query.page || 1;
+    let totalItems;
+
+    Products.find().countDocuments()
+    .then((numProducts)=>{
+        totalItems = numProducts;
+        return  Products.find()                     // mongoose method find()
+            .skip( ( page - 1 ) * ITEMS_PER_PAGE )      // skips items cuz of pagination
+            .limit(ITEMS_PER_PAGE)
+    })
     .then(products => {
         res.render('./shop/index', 
         {prods: products,
         docTitle:'Shop',                           //render templates called shop
-        path:'/'
+        path:'/',
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
         }); 
     })
     .catch(err=>{
+        console.log(err);
         const error = new Error(err);
         error.httpStatusCode = 500;
         return next(error);
