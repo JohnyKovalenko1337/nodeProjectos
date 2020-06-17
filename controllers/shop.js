@@ -1,5 +1,8 @@
 const Products = require('../models/product');
 const Order = require('../models/order');
+const fs = require('fs');
+const path = require('path');
+const PDFDocument = require('pdfkit');
 //<====================================================products================================================
 exports.getProducts = (req,res,next) =>{
     Products.find()                     //mongoose method find()
@@ -148,3 +151,53 @@ exports.getOrder =(req,res,next )=>{
     });
 }
 
+
+exports.getInvoice = (req,res,next)=>{
+    const orderId = req.params.orderId;
+    Order.findById(orderId).then(order=>{
+        if(!order){
+            return next(new Error('no order found'))
+        }
+        if(order.user.userId.toString() !== req.user._id.toString()){
+            return next(new Error('UnAuthorized'))
+        }
+        const invoiceName = 'invoice-'+orderId+'.pdf'; 
+        const invoicePath = path.join('invoices' , invoiceName);
+
+        const pdfDoc = new PDFDocument();
+
+        res.setHeader('Content-Type', 'application/pdf');
+
+        res.setHeader('Content-Disposition', 'inline');
+
+        pdfDoc.pipe(fs.createWriteStream(invoicePath))
+        pdfDoc.pipe(res);
+        pdfDoc.fontSize(26).text('Invoice', {
+            underline: true
+        });
+        pdfDoc.text('-----------------------');
+        let totalPrice = 0;
+        order.products.forEach(prod => {
+            totalPrice += prod.quantity * prod.productData.price;
+            pdfDoc
+            .fontSize(14)
+            .text(
+                prod.productData.title +
+                ' - ' +
+                prod.quantity +
+                ' x ' +
+                '$' +
+                prod.productData.price
+            );
+        });
+      pdfDoc.text('------------------------------------');
+      pdfDoc.fontSize(20).text('Total Price: $' + totalPrice);
+      pdfDoc.text('------------------------------------');
+      pdfDoc.end();
+    })
+    .catch(err=>{
+        next(err);
+    })
+    
+
+}
