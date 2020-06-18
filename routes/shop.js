@@ -18,12 +18,14 @@ Router.post('/cart', isAuth,shopController.postCart);
 
 Router.post('/cart-delete-item',isAuth, shopController.postCartDelete);
 
-Router.post('/create-order',isAuth, shopController.postOrder);
-
 Router.get('/orders',isAuth,shopController.getOrder) ;   
 
 Router.get('/orders/:orderId', isAuth, shopController.getInvoice);
 
-//Router.get('/checkout',shopController.getCheckout ) ;
+Router.get('/checkout', isAuth, shopController.getCheckout ) ;
+
+Router.get('/checkout/success', isAuth, shopController.getCheckoutSuccess) ;
+
+Router.get('/checkout/cancel', isAuth, shopController.getCheckout ) ;
 
 module.exports =Router;
