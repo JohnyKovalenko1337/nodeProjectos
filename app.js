@@ -100,6 +100,7 @@ app.use(errorController.prob);
 
 
 app.use((error,req,res,next)=>{           // special type of middleware
+  console.log(error);
   res.status(500).render('500', {
     docTitle:'error',
     path:'/500',
