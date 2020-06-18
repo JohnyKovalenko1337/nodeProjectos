@@ -49,7 +49,7 @@ Router.post ('/edit-product',
     isAuth,
     adminController.postEditProduct);
 
-Router.post('/delete-product', isAuth,  adminController.postDeleteProduct) ; 
+Router.delete('/product/:productId', isAuth,  adminController.deleteProduct) ; 
 
 
 
