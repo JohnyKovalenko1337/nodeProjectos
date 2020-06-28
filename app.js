@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
+
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDbStore = require('connect-mongodb-session')(session);
@@ -8,8 +10,11 @@ const csurf = require('csurf');
 const flash = require('connect-flash');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 //<============================================================================
-const MONGODB_URI = 'mongodb+srv://sadJo:qwerty123@cluster0-am1ix.mongodb.net/test';
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-am1ix.mongodb.net/${process.env.MONGO_DEFOULT_DATABASE}?retryWrites=true&w=majority`;
 
 const store = new MongoDbStore({
   uri: MONGODB_URI,
@@ -49,6 +54,14 @@ const shopRoutes = require('./routes/shop');
 const errorController = require('./controllers/error');
 const AuthRouter = require('./routes/auth');
 const { fileLoader } = require('ejs');
+
+//<=========================================================================================
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname,'access.log'), {flags:'a'})
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', {stream: accessLogStream}));
 //<======================================================================================
 app.use(bodyParser.urlencoded({ extended: false }));           // syntax for body Parser
 
@@ -95,6 +108,8 @@ app.use('/admin', adminRoutes);              //'hidden' middleware for admin.ejs
 app.use(shopRoutes);                            //middleware for shop.ejs
 app.use(AuthRouter);
 
+
+
 app.use('/500',errorController.get500);
 app.use(errorController.prob);
 
@@ -112,7 +127,7 @@ app.use((error,req,res,next)=>{           // special type of middleware
 mongoose.connect(MONGODB_URI,{ useUnifiedTopology: true, useNewUrlParser: true  })
 .then(()=>{
   console.log('success');
-  app.listen(3000);
+  app.listen(process.env.PORT || 3000);
 })
 .catch(err => {
   console.log(err);
