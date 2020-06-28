@@ -3,3 +3,4 @@ invoices
 image
 access.log
 nodemon.json
+package-lock.json
