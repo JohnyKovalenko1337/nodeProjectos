@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "engines":{
+    "node":  "12.5.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=production MONGO_USER=sadJo  MONGO_PASSWORD=qwerty123 MONGO_DEFOULT_DATABASE=test STRIPE_KEY=sk_test_51GvMH1KQhPcECCf6KqdaxLJp7JDm11MP1XRKf46mUHuWj7Zf69fPFuvFOASyRtPKfPDMbmzbbiHhLfXEjckZV9gD00Hls7eQBs node app.js",
-    "start-dev": "nodemon app.js"
+    "start": "SET NODE_ENV=production&&SET MONGO_USER=sadJo&&SET MONGO_PASSWORD=RhfPUnZXvsWfi8vt&&SET MONGO_DEFOULT_DATABASE=test&&SET STRIPE_KEY=sk_test_51GvMH1KQhPcECCf6KqdaxLJp7JDm11MP1XRKf46mUHuWj7Zf69fPFuvFOASyRtPKfPDMbmzbbiHhLfXEjckZV9gD00Hls7eQBs&& node app.js",
+    "start-dev": "nodemon app.js",
+    "start-server": "node app.js"
   },
   "author": "",
   "license": "ISC",
@@ -35,6 +39,7 @@
     "uuid": "^8.1.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.2",
     "nodemon": "^2.0.2"
   }
 }
