@@ -54,7 +54,7 @@ exports.postAddProduct=(req,res,next) =>{
             validateErrors: errors.array()
         }); 
     }
-    const imageUrl = image.path;
+    const imageUrl = image.path.replace('/', '\\');
     const product = new Products({
         title:title, 
         price:price, 
