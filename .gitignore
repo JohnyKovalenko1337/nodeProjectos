@@ -1,6 +1,7 @@
 node_modules
+server.cert
+server.key
 invoices
 image
 access.log
 nodemon.json
-package-lock.json
